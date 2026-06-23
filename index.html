@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voldt e-mailhandtekening generator</title>
+<style>
+  :root { --voldt-blue: #1058A0; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+    color: #1a1a1a;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+  header h1 { color: var(--voldt-blue); font-size: 22px; margin: 8px 0 4px; }
+  header p { margin: 0 0 24px; color: #555; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #fff; border: 1px solid #e2e6ea; border-radius: 10px; padding: 18px; }
+  .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #888; margin: 0 0 14px; }
+  label { display: block; font-size: 12px; color: #555; margin: 12px 0 4px; font-weight: bold; }
+  label:first-of-type { margin-top: 0; }
+  input {
+    width: 100%; padding: 9px 10px; border: 1px solid #cdd3d8; border-radius: 6px;
+    font-size: 14px; font-family: inherit;
+  }
+  input:focus { outline: none; border-color: var(--voldt-blue); }
+  .preview-box { background: #fff; padding: 24px; border-radius: 6px; border: 1px solid #eee; overflow-x: auto; }
+  .actions { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button {
+    background: var(--voldt-blue); color: #fff; border: none; padding: 11px 18px;
+    border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit;
+  }
+  button:hover { background: #0d4985; }
+  .copied { color: var(--voldt-blue); font-size: 13px; font-weight: bold; display: none; }
+  .hint { font-size: 12px; color: #777; margin-top: 10px; line-height: 1.5; }
+  details { margin-top: 18px; font-size: 13px; color: #444; }
+  summary { cursor: pointer; font-weight: bold; color: var(--voldt-blue); }
+  details ol { padding-left: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Voldt e-mailhandtekening</h1>
+    <p>Vul je gegevens in, bekijk het voorbeeld en klik op &laquo;Kopieer handtekening&raquo;. Plak daarna in Outlook (handtekening-instellingen).</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Jouw gegevens</h2>
+      <label for="naam">Naam</label>
+      <input id="naam" type="text" value="Jan van Appeldoorn">
+
+      <label for="functie">Functietitel</label>
+      <input id="functie" type="text" value="Sales Manager">
+
+      <label for="tel">Telefoon (T)</label>
+      <input id="tel" type="text" value="+31 (0)20 123 45 67">
+
+      <label for="mobiel">Mobiel (M)</label>
+      <input id="mobiel" type="text" value="+31 (0)6 12 34 56 78">
+
+      <label for="email">E-mail (E)</label>
+      <input id="email" type="text" value="naam@voldt.com">
+
+      <label for="website">Website (W)</label>
+      <input id="website" type="text" value="www.voldt.com">
+
+      <label for="adres">Adres (A)</label>
+      <input id="adres" type="text" value="Voldt B.V., Nederland">
+
+      <label for="logo">Logo-URL (volledige https-link)</label>
+      <input id="logo" type="text" value="https://voldt-amazon-images.voldt.com/images/voldt-logo.png">
+      <p class="hint">De logo-URL moet een volledige, publieke https-link zijn, anders toont Outlook een kapot icoon.</p>
+    </div>
+
+    <div class="card">
+      <h2>Voorbeeld</h2>
+      <div class="preview-box">
+        <div id="preview"></div>
+      </div>
+      <div class="actions">
+        <button id="copyBtn" type="button">Kopieer handtekening</button>
+        <span id="copied" class="copied">Gekopieerd!</span>
+      </div>
+      <details>
+        <summary>In Outlook zetten</summary>
+        <ol>
+          <li>Klik op &laquo;Kopieer handtekening&raquo; hierboven.</li>
+          <li>Outlook &rarr; Bestand &rarr; Opties &rarr; E-mail &rarr; Handtekeningen (of in nieuwe Outlook: Instellingen &rarr; Handtekeningen).</li>
+          <li>Maak een nieuwe handtekening, plak met Ctrl+V en sla op.</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+  var ids = ["naam","functie","tel","mobiel","email","website","adres","logo"];
+  var blue = "#1058A0";
+
+  function val(id){ return document.getElementById(id).value.trim(); }
+
+  function row(label, value, href){
+    if(!value) return "";
+    var inner = href
+      ? '<a href="' + href + '" style="color:#1a1a1a;text-decoration:none;">' + value + '</a>'
+      : value;
+    return '<tr>'
+      + '<td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:' + blue + ';font-weight:bold;padding:1px 8px 1px 0;vertical-align:top;">' + label + '</td>'
+      + '<td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#1a1a1a;padding:1px 0;vertical-align:top;">' + inner + '</td>'
+      + '</tr>';
+  }
+
+  function buildSignature(){
+    var naam = val("naam"), functie = val("functie"), tel = val("tel"),
+        mobiel = val("mobiel"), email = val("email"), website = val("website"),
+        adres = val("adres"), logo = val("logo");
+
+    var telHref = tel ? "tel:" + tel.replace(/[^0-9+]/g,"") : "";
+    var mobHref = mobiel ? "tel:" + mobiel.replace(/[^0-9+]/g,"") : "";
+    var mailHref = email ? "mailto:" + email : "";
+    var webHref = website ? (website.indexOf("http") === 0 ? website : "https://" + website.replace(/^\/+/,"")) : "";
+
+    var logoImg = logo
+      ? '<img src="' + logo + '" alt="Voldt" width="200" style="display:block;border:0;outline:none;text-decoration:none;width:200px;max-width:200px;height:auto;margin-top:10px;">'
+      : "";
+
+    return ''
+    + '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">'
+    +   '<tr>'
+    +     '<td style="vertical-align:top;padding-right:18px;">'
+    +       '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#000000;">' + (naam || "") + '</div>'
+    +       (functie ? '<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:' + blue + ';margin-top:2px;">' + functie + '</div>' : '')
+    +       logoImg
+    +     '</td>'
+    +     '<td style="border-left:1px solid #000000;padding-left:18px;vertical-align:top;">'
+    +       '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">'
+    +          row("T", tel, telHref)
+    +          row("M", mobiel, mobHref)
+    +          row("E", email, mailHref)
+    +          row("W", website, webHref)
+    +          row("A", adres, "")
+    +       '</table>'
+    +     '</td>'
+    +   '</tr>'
+    + '</table>';
+  }
+
+  function render(){
+    document.getElementById("preview").innerHTML = buildSignature();
+  }
+
+  ids.forEach(function(id){
+    document.getElementById(id).addEventListener("input", render);
+  });
+  render();
+
+  document.getElementById("copyBtn").addEventListener("click", function(){
+    var html = buildSignature();
+    var done = function(){
+      var c = document.getElementById("copied");
+      c.style.display = "inline";
+      setTimeout(function(){ c.style.display = "none"; }, 2000);
+    };
+    if (navigator.clipboard && window.ClipboardItem){
+      var data = new ClipboardItem({
+        "text/html": new Blob([html], {type:"text/html"}),
+        "text/plain": new Blob([document.getElementById("preview").innerText], {type:"text/plain"})
+      });
+      navigator.clipboard.write([data]).then(done, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+    function fallbackCopy(){
+      var range = document.createRange();
+      range.selectNode(document.getElementById("preview"));
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand("copy"); done(); } catch(e){}
+      sel.removeAllRanges();
+    }
+  });
+</script>
+</body>
+</html>
